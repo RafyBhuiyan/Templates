@@ -8,99 +8,141 @@ void io()
     freopen("input.txt","r",stdin);
     freopen("output.txt","w",stdout);
 }
-vector<int> sort_cyclic_shifts(string const& s)
+
+struct SuffixArray
 {
-    int n = s.size();
-    const int alphabet = 256;
-    vector<int> p(n), c(n), cnt(max(alphabet, n), 0);
-    for (int i = 0; i < n; i++)
-        cnt[s[i]]++;
-    for (int i = 1; i < alphabet; i++)
-        cnt[i] += cnt[i-1];
-    for (int i = 0; i < n; i++)
-        p[--cnt[s[i]]] = i;
-    c[p[0]] = 0;
-    int classes = 1;
-    for (int i = 1; i < n; i++) {
-        if (s[p[i]] != s[p[i-1]])
-            classes++;
-        c[p[i]] = classes - 1;
-    }
-    vector<int> pn(n), cn(n);
-    for (int h = 0; (1 << h) < n; ++h)
+    int *sa, *ra, *cnt, *pos, *lcp, *lg;
+    int **st;
+    int n, A;
+    string s;
+
+    void srt(int mx, int k)
     {
-        for (int i = 0; i < n; i++)
-        {
-            pn[i] = p[i] - (1 << h);
-            if (pn[i] < 0)
-                pn[i] += n;
-        }
-        fill(cnt.begin(), cnt.begin() + classes, 0);
-        for (int i = 0; i < n; i++)
-            cnt[c[pn[i]]]++;
-        for (int i = 1; i < classes; i++)
-            cnt[i] += cnt[i-1];
-        for (int i = n-1; i >= 0; i--)
-            p[--cnt[c[pn[i]]]] = pn[i];
-        cn[p[0]] = 0;
-        classes = 1;
-        for (int i = 1; i < n; i++)
-        {
-            pair<int, int> cur = {c[p[i]], c[(p[i] + (1 << h)) % n]};
-            pair<int, int> prev = {c[p[i-1]], c[(p[i-1] + (1 << h)) % n]};
-            if (cur != prev)
-                ++classes;
-            cn[p[i]] = classes - 1;
-        }
-        c.swap(cn);
+        for(int i = 0; i < mx; i++)cnt[i] = 0;
+        for(int i = 0; i < n; i++)cnt[(i + k >= n ? 0 : ra[i + k])]++;
+        for(int i = 1; i < mx; i++)cnt[i] += cnt[i - 1];
+        for(int i = mx - 1; i > 0; i--)cnt[i] = cnt[i - 1];
+        cnt[0] = 0;
+        for(int i = 0; i < n; i++)pos[cnt[(sa[i] + k >= n ? 0 : ra[sa[i] + k])]++] = sa[i];
+        for(int i = 0; i < n; i++)sa[i] = pos[i];
     }
-    return p;
-}
+    void create_sa()
+    {
+        cnt = (int*)malloc(max(A, n + 5) * sizeof(int));
+        pos = (int*)malloc((n + 5) * sizeof(int));
 
-vector<int> lcparray(string const& s, vector<int> const& p) {
-    int n = s.size();
-    vector<int> rank(n, 0);
-    for (int i = 0; i < n; i++)
-        rank[p[i]] = i;
+        int mx = A;
 
-    int k = 0;
-    vector<int> lcp(n-1, 0);
-    for (int i = 0; i < n; i++) {
-        if (rank[i] == n - 1) {
-            k = 0;
-            continue;
+        for(int k = 1; k < n; k <<= 1)
+        {
+            srt(mx, k);
+            srt(mx, 0);
+
+            int r = 1;
+            pos[sa[0]] = r;
+            for(int i = 1; i < n; i++)
+            {
+                pos[sa[i]] = (ra[sa[i]] == ra[sa[i - 1]] && (sa[i - 1] + k >= n ? 1 : ra[sa[i - 1] + k] == (sa[i] + k >= n ? 1 : ra[sa[i] + k])) ? r : ++r);
+            }
+            for(int i = 0; i < n; i++)ra[i] = pos[i];
+            mx = r + 1;
         }
-        int j = p[rank[i] + 1];
-        while (i + k < n && j + k < n && s[i+k] == s[j+k])
-            k++;
-        lcp[rank[i]] = k;
-        if (k)
-            k--;
     }
-    return lcp;
-}
 
-vector<int> suffixarray(string s) {
-    s += "$";
-    vector<int> sorted_shifts = sort_cyclic_shifts(s);
-    sorted_shifts.erase(sorted_shifts.begin());
-    return sorted_shifts;
-}
+    SuffixArray(string &str, char garb = '$', int a = 128)
+    {
+        sa = ra = cnt = pos = lcp = lg = NULL;
+        st = NULL;
+        s = str;
+        s.push_back(garb);
+        n = s.size();
+        A = a;
+        sa = (int*)malloc(n * sizeof(int));
+        ra = (int*)malloc(n * (sizeof(int)));
+        for(int i = 0; i < n; i++) sa[i] = i, ra[i] = s[i];
+        create_sa();
+    }
+    vector<int> get_Suffixarr()
+    {
+        vector<int>arr;
+        for(int i=0;i<s.size();i++)
+        {
+            arr.push_back(sa[i]);
+        }
+        return arr;
+    }
+    //lcp[i] = lcp of sa[i] and sa[i-1]
+    void compute_lcp()
+    {
+        pos[sa[0]] = -1;
+        lcp = (int*)malloc((n + 5) * sizeof(int));
+        for(int i = 1; i < s.size(); i++)pos[sa[i]] = sa[i - 1];
+        for(int i = 0, l = 0; i < s.size(); i++)
+        {
+            if(pos[i] == -1)
+            {
+                //lcp of sa[0] = 0
+                ra[i] = 0;
+                continue;
+            }
+            while(s[l + i] == s[pos[i] + l])l++;
+            ra[i] = l--;
+            if(l < 0)l = 0;
+        }
+        for(int i = 0; i < s.size(); i++)lcp[i] = ra[sa[i]];
+    }
+
+    //sparse table for lcp
+    //call compute_lcp before it
+    void create_sparse()
+    {
+        const int K = ceil(log2(n)) + 2;
+        st = (int**)malloc(sizeof(int*) * (n + 5));
+        lg = (int*)malloc(sizeof(int) * (n + 5));
+        for(int i = 0; i < n; i++)
+        {
+            st[i] = (int*)malloc(K * sizeof(int));
+            st[i][0] = lcp[i];
+        }
+        lg[1] = 0;
+        for(int i = 2; i <= n; i++)lg[i] = lg[i >> 1] + 1;
+        for(int i = 1; i < K; i++)
+        {
+            for(int j=0; j+(1<<i)<=n; j++)
+                st[j][i] = min(st[j][i - 1], st[j + (1 << (i - 1))][i - 1]);
+        }
+    }
+
+    //lcp of sa[l] and sa[r]
+    int query(int l, int r)
+    {
+        if(l > r)swap(l, r);
+        if(l == r)return n - sa[l] - 1;
+        l++;
+        int x = lg[r - l + 1];
+        return min(st[l][x], st[r - (1 << x) + 1][x]);
+    }
+    ~SuffixArray()
+    {
+        if(sa != NULL)free(sa);
+        if(ra != NULL)free(ra);
+        if(cnt != NULL)free(cnt);
+        if(pos != NULL)free(pos);
+        if(lcp != NULL)free(lcp);
+        if(lg != NULL)free(lg);
+        if(st != NULL)
+        {
+            for(int i = 0; i < n; i++)free(st[i]);
+            free(st);
+        }
+    }
+};
 int main()
 {
-    fastio
-    //io();
-    ll test=1;
     string ra;
     cin>>ra;
-    vector<int>ans;
-    ans = suffixarray(ra);
-    for(auto i:ans)
-        cout<<i<<" ";
-    cout<<endl;
-    ans = lcparray(ra,ans);
-    cout<<0<<" ";
-    for(auto i:ans)
-        cout<<i<<" ";
+    SuffixArray sf(ra);
+    vector<int> sa = sf.get_Suffixarr();
+    
     return 0;
 }
