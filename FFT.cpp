@@ -62,7 +62,7 @@ vector <int> multiply (vector <int> a, vector <int> b)
     }
     fft(f, sz);
     vector <int> c(n + m - 1);
-    for(int i = 0; i < n + m - 1; ++i) c[i] = (f[i].real() / sz + 0.5);
+    for(int i = 0; i < n + m - 1; ++i) c[i] = min((f[i].real() / sz + 0.5),1.0);
     return c;
 }
 
