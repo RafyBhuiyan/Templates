@@ -63,7 +63,68 @@ vector <int> multiply (vector <int> a, vector <int> b)
     fft(f, sz);
     vector <int> c(n + m - 1);
     for(int i = 0; i < n + m - 1; ++i) c[i] = (f[i].real() / sz + 0.5);
-    for(int i = 0; i < n + m - 1; ++i) c[i] = (c[i] > 0);
     return c;
+}
+
+
+//fast one
+
+using cd = complex<double>;
+void fft(vector<cd> &a, bool invert)
+{
+    int n = a.size();
+
+    for (int i = 1, j = 0; i < n; i++)
+    {
+        int bit = n >> 1;
+        for (; j & bit; bit >>= 1)
+            j ^= bit;
+        j ^= bit;
+
+        if (i < j)
+            swap(a[i], a[j]);
+    }
+
+    for (int len = 2; len <= n; len <<= 1)
+    {
+        double ang = 2 * acos(-1) / len * (invert ? -1 : 1);
+        cd wlen(cos(ang), sin(ang));
+        for (int i = 0; i < n; i += len)
+        {
+            cd w(1);
+            for (int j = 0; j < (len >> 1); j++)
+            {
+                cd u = a[i + j], v = a[i + j + (len >> 1)] * w;
+                a[i + j] = u + v;
+                a[i + j + (len >> 1)] = u - v;
+                w *= wlen;
+            }
+        }
+    }
+
+    if (invert)
+    {
+        for (cd & x : a)
+            x /= n;
+    }
+}
+
+vector<ll> multiply(vector<ll> &a, vector<ll> &b)
+{
+    vector<cd> fa(a.begin(), a.end()), fb(b.begin(), b.end());
+    ll n = 1;
+    while(n < a.size() + b.size())n <<= 1;
+    fa.resize(n), fb.resize(n);
+    fft(fa, false);
+    fft(fb, false);
+    for(int i = 0; i < n; i++)fa[i] *= fb[i];
+    fft(fa, true);
+    vector<ll> res(n);
+    for(int i = 0; i < n; i++)
+    {
+        res[i] = round(fa[i].real());
+        if(res[i]) res[i] = 1;
+    }
+    return res;
 }
 
