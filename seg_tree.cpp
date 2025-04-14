@@ -1,15 +1,19 @@
 #include<bits/stdc++.h>
-using namespace std;
-#define N 200010
 #define ll long long int
-#define For(i,n) for(int i=0;i<n;i++)
+#define br <<"\n"
+#define no "NO"
+#define yes "YES"
+#define decimal(n) cout<<fixed<<setprecision(n);
+#define For(i,n) for(ll i=0;i<n;i++)
+#define fastio ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+using namespace std;
 
-class SegmentTree
+class SegTree
 {
 public:
     int n;
     vector<int>tree,arr;
-    SegmentTree(vector<int>&v)
+    SegTree(vector<int>&v)
     {
         n = v.size();
         arr = v;
@@ -68,13 +72,24 @@ private:
     }
 };
 
+
+void solve()
+{
+    int n;
+    cin>>n;
+    vector<int>ra(n);
+    SegTree sg = SegTree(ra);
+}
 int main()
 {
-    ios_base::sync_with_stdio(0);
-    cin.tie(0);
-    cout.tie(0);
-
-    int n = 10;
-    vector<int>ra(n);
-    SegmentTree sg = SegmentTree(ra);
+    fastio
+    //io();
+    ll test=1;
+    //cin>>test;
+    For(i,test)
+    {
+        //cout<<"Case "<<i+1<<": ";
+        solve();
+    }
+    return 0;
 }
