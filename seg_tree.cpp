@@ -1,100 +1,112 @@
-#include<bits/stdc++.h>
-#define ll long long int
-#define no "NO"
-#define yes "YES"
-#define decimal(n) cout<<fixed<<setprecision(n);
-#define For(i,n) for(ll i=0;i<n;i++)
-#define fastio ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0);
-using namespace std;
-void io()
+struct SegTree
 {
-    freopen("input.txt","r",stdin);
-    freopen("output.txt","w",stdout);
-}
-class SegTree
-{
-public:
-    ll n;
-    vector<ll>tree,arr;
-    SegTree(vector<ll>&v)
+    using T = long long int;
+    struct Node
     {
-        n = v.size();
-        arr = v;
-        tree.assign(4*n,0);
-        build(1,0,n-1);
+        T seg,sum,suff,pref;
+        Node()
+        {
+            seg = sum = pref = suff = 0;
+        }
+        Node(T _seg,T _a,T _b,T _c)
+        {
+            seg = _seg;
+            sum = _a;
+            pref = _b;
+            suff = _c;
+        }
+    };
+    Node merge(Node a, Node b)
+    {
+        return Node(max({a.seg,b.seg,a.suff+b.pref}),a.sum+b.sum,max(a.pref,a.sum+b.pref),max(b.suff,b.sum+a.suff));
     }
-    SegTree(ll _n)
+    vector<Node> st;
+    int n;
+    void init(int _n)
     {
-        tree.assign(4*_n,0);
+        if(_n <= 0)return;
         n = _n;
+        int m = ceil(log2(n)) + 1;
+        st.resize((1 << m) + 5);
     }
-    void update(ll ind,ll val)
+    SegTree(int _n = 0)
     {
-        update(1,0,n-1,ind,val);
+        init(_n);
     }
-    ll query(ll l,ll r)
+    void build(int x, int l, int r, vector<T> &v)
     {
-        return query(1,0,n-1,l,r);
-    }
-private:
-    ll merge(ll a,ll b)
-    {
-        return (a+b);
-    }
-    void build(ll node,ll start,ll end)
-    {
-        if(start==end)tree[node] = arr[start];
-        else
+        if(l == r)
         {
-            ll mid = (start+end)/2;
-            build(2*node,start,mid);
-            build(2*node+1,mid+1,end);
-            tree[node] = merge(tree[2*node],tree[2*node+1]);
+            if(v[l]>0)
+            {
+                st[x] = Node(v[l],v[l],v[l],v[l]);
+            }
+            else
+                st[x] = Node(0ll,v[l],0ll,0ll);
+            return;
         }
+        int m = l + r >> 1;
+        build(x << 1, l, m, v);
+        build(x << 1 | 1, m + 1, r, v);
+        st[x] = merge(st[x << 1], st[x << 1 | 1]);
     }
-    void update(ll node,ll start,ll end,ll ind,ll val)
+    void build(vector<T> &v)
     {
-        if(ind<start or ind>end)return;
-        if(start==end)tree[node] = val;
-        else
-        {
-            ll mid = (start+end)/2;
-            if(start<=ind and ind<=mid)update(2*node,start,mid,ind,val);
-            else update(2*node+1,mid+1,end,ind,val);
-            tree[node] = merge(tree[2*node],tree[2*node+1]);
-        }
+        build(1, 0, n - 1, v);
     }
-    ll query(ll node,ll start,ll end,ll l,ll r)
+    void build(T x)
     {
-
-        if(end<l or start>r)return 0;
-        if(start==end)return tree[node];
-        else if(l<=start and end<=r)return tree[node];
-        else
+        vector<T> v(n, x);
+        build(1, 0, n - 1, v);
+    }
+    void update(int x, int l, int r, int p, T v)
+    {
+        if(l == r)
         {
-            ll mid = (start+end)/2;
-            ll left = query(2*node,start,mid,l,r);
-            ll right = query(2*node+1,mid+1,end,l,r);
-            return merge(left,right);
+            if(v>0)
+            {
+                st[x] = Node(v,v,v,v);
+            }
+            else
+                st[x] =  Node(0ll,v,0ll,0ll);
+            return;
         }
+        int m = l + r >> 1;
+        if(p <= m) update(x << 1, l, m, p, v);
+        else update(x << 1 | 1, m + 1, r, p, v);
+        st[x] = merge(st[x << 1], st[x << 1 | 1]);
+    }
+    void update(int p, T v)
+    {
+        update(1, 0, n - 1, p, v);
+    }
+    Node query(int x, int sl, int sr, int l, int r)
+    {
+        if(sr < l || sl > r) return Node();
+        if(sl >= l && sr <= r) return st[x];
+        int m = sl + sr >> 1;
+        return merge(query(x << 1, sl, m, l, r), query(x << 1 | 1, m + 1, sr, l, r));
+    }
+    Node query(int l, int r)
+    {
+        if(l > r) return Node();
+        return query(1, 0, n - 1, l, r);
     }
 };
-
-
 void solve()
 {
-
-}
-int main()
-{
-    fastio
-    //io();
-    ll test=1;
-    //cin>>test;
-    For(i,test)
+    int n,m;
+    cin>>n>>m;
+    vector<ll>ra(n);
+    For(i,n) cin>>ra[i];
+    SegTree sg = SegTree(n);
+    sg.build(ra);
+    int l,r;
+    cout<<sg.query(0,n-1).seg<<endl;
+    For(i,m)
     {
-        //cout<<"Case "<<i+1<<": ";
-        solve();
+        cin>>l>>r;
+        sg.update(l,r);
+        cout<<sg.query(0,n-1).seg<<endl;
     }
-    return 0;
 }
