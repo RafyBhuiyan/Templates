@@ -1,22 +1,13 @@
-#include<bits/stdc++.h>
-#define ll long long int
-#define For(i,n) for(ll i=0;i<n;i++)
-#define fastio ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0);
-using namespace std;
-
-
 const int N = 3e5 + 9;
 const int mod = 1e9 + 7;
 
 struct CHT {
   vector<ll> m, b;
   int ptr = 0;
-
   bool bad(int l1, int l2, int l3) {
     return 1.0 * (b[l3] - b[l1]) * (m[l1] - m[l2])  <= 1.0 * (b[l2] - b[l1]) * (m[l1] - m[l3]); //(slope dec+query min),(slope inc+query max)
     //return 1.0 * (b[l3] - b[l1]) * (m[l1] - m[l2])  > 1.0 * (b[l2] - b[l1]) * (m[l1] - m[l3]); //(slope dec+query max), (slope inc+query min)
   }
-
   void add(ll _m, ll _b) {
     m.push_back(_m);
     b.push_back(_b);
@@ -27,7 +18,6 @@ struct CHT {
       b.erase(b.end() - 2);
     }
   }
-
   ll f(int i, ll x) {
     return m[i] * x + b[i];
   }
@@ -47,7 +37,7 @@ struct CHT {
     return f(mid, x);
   }
 };
-void solve(ll curr)
+void solve()
 {
     ll n,ans=0;
     cin>>n;
@@ -64,18 +54,3 @@ void solve(ll curr)
     }
     cout<<dp[n-1]<<endl;
 }
-int main()
-{
-    fastio
-    //io();
-    ll test=1;
-    //cin>>test;
-    For(i,test)
-    {
-        //cout<<"Case "<<i+1<<": ";
-        solve(i+1);
-    }
-    return 0;
-}
-
-
