@@ -4,7 +4,7 @@ struct Node
     T sum;
     Node()
     {
-        sum = 0;
+        sum = 1;
     }
     Node(T _sum)
     {
@@ -114,3 +114,4 @@ struct SegTree
         st[x] = merge(st[x << 1], st[x << 1 | 1]);
     }
 };
+
