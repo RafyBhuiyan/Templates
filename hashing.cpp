@@ -81,3 +81,7 @@ pair<int, int> gethash(int i, int j)
     hs.second = 1LL * hs.second * ipw[i].second % mod2;
     return hs;
 }
+pair<int,int> mergeHash(ll l1,ll r1,ll l2,ll r2)
+{
+    return {gethash(l1,r1).first + gethash(l2,r2).first*pw[r1-l1+1].first)%mod1,gethash(l1,r1).second + gethash(l2,r2).second*pw[r1-l1+1].second)%mod2};
+}
