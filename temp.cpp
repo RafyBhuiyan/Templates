@@ -29,7 +29,41 @@ void TLE()
     clock_t shuru = clock(); // call it in the main code
     (clock() - shuru) * 1.0 / CLOCKS_PER_SEC < 3.5;
 }
-
+const ll mod = 1e9 + 7;
+ll binpow(ll a, ll p)
+{
+    ll ans = 1;
+    while (p)
+    {
+        if (p % 2)
+        {
+            ans = (ans * a) % mod;
+        }
+        p /= 2;
+        a = (a * a) % mod;
+    }
+    return ans;
+}
+ll gun(ll a, ll b)
+{
+    return ((a % mod) * (b % mod)) % mod;
+}
+ll jog(ll a, ll b)
+{
+    return (a + b) % mod;
+}
+ll biyog(ll a, ll b)
+{
+    return (a - b + mod) % mod;
+}
+ll inv(ll a)
+{
+    return binpow(a,mod-2);
+}
+ll vag(ll a,ll b)
+{
+    return gun(a,inv(b));
+}
 ll ask(ll l, ll r)
 {
     ll x;
