@@ -1,148 +1,67 @@
-#include<bits/stdc++.h>
-#define ll long long int
-#define For(i,n) for(int i=0;i<n;i++)
-#define fastio ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0);
-using namespace std;
-void io()
-{
-    freopen("input.txt","r",stdin);
-    freopen("output.txt","w",stdout);
-}
-
-struct SuffixArray
-{
-    int *sa, *ra, *cnt, *pos, *lcp, *lg;
-    int **st;
-    int n, A;
-    string s;
-
-    void srt(int mx, int k)
-    {
-        for(int i = 0; i < mx; i++)cnt[i] = 0;
-        for(int i = 0; i < n; i++)cnt[(i + k >= n ? 0 : ra[i + k])]++;
-        for(int i = 1; i < mx; i++)cnt[i] += cnt[i - 1];
-        for(int i = mx - 1; i > 0; i--)cnt[i] = cnt[i - 1];
-        cnt[0] = 0;
-        for(int i = 0; i < n; i++)pos[cnt[(sa[i] + k >= n ? 0 : ra[sa[i] + k])]++] = sa[i];
-        for(int i = 0; i < n; i++)sa[i] = pos[i];
+struct SuffixArray {
+    string a; int N, m;
+    vector<int> SA, LCP, x, y, w, c, temp;
+    SuffixArray(string _a, int m) : a(" " + _a), N(a.length()), m(m),
+        SA(N), LCP(N), x(N), y(N), w(max(m, N)), c(N) {
+        a[0] = 0;
+        DA();
+        kasaiLCP();
+#define REF(X) { rotate(X.begin(), X.begin()+1, X.end()); X.pop_back();}
+        REF(SA); REF(LCP);
+        a = a.substr(1, a.size());
+        for (int i = 0; i < (int) SA.size(); ++i) --SA[i];
+#undef REF
     }
-    void create_sa()
-    {
-        cnt = (int*)malloc(max(A, n + 5) * sizeof(int));
-        pos = (int*)malloc((n + 5) * sizeof(int));
-
-        int mx = A;
-
-        for(int k = 1; k < n; k <<= 1)
-        {
-            srt(mx, k);
-            srt(mx, 0);
-
-            int r = 1;
-            pos[sa[0]] = r;
-            for(int i = 1; i < n; i++)
-            {
-                pos[sa[i]] = (ra[sa[i]] == ra[sa[i - 1]] && (sa[i - 1] + k >= n ? 1 : ra[sa[i - 1] + k] == (sa[i] + k >= n ? 1 : ra[sa[i] + k])) ? r : ++r);
-            }
-            for(int i = 0; i < n; i++)ra[i] = pos[i];
-            mx = r + 1;
+    inline bool cmp (const int a, const int b, const int l) {
+        return (y[a] == y[b] && y[a + l] == y[b + l]);
+    }
+    void Sort() {
+        for (int i = 0; i < m; ++i) w[i] = 0;
+        for (int i = 0; i < N; ++i) ++w[x[y[i]]];
+        for (int i = 0; i < m - 1; ++i) w[i + 1] += w[i];
+        for (int i = N - 1; i >= 0; --i) SA[--w[x[y[i]]]] = y[i];
+    }
+    void DA() {
+        for (int i = 0; i < N; ++i) x[i] = a[i], y[i] = i;
+        Sort();
+        for (int i, j = 1, p = 1; p < N; j <<= 1, m = p) {
+            for (p = 0, i = N - j; i < N; i++) y[p++] = i;
+            for (int k = 0; k < N; ++k) if (SA[k] >= j) y[p
+                            ++] = SA[k] - j;
+            Sort();
+            for (swap(x, y), p = 1, x[SA[0]] = 0, i = 1; i < N; ++i)
+                x[SA[i]] = cmp(SA[i - 1], SA[i], j) ? p - 1 : p++;
         }
     }
-
-    SuffixArray(string &str, char garb = '$', int a = 128)
-    {
-        sa = ra = cnt = pos = lcp = lg = NULL;
-        st = NULL;
-        s = str;
-        s.push_back(garb);
-        n = s.size();
-        A = a;
-        sa = (int*)malloc(n * sizeof(int));
-        ra = (int*)malloc(n * (sizeof(int)));
-        for(int i = 0; i < n; i++) sa[i] = i, ra[i] = s[i];
-        create_sa();
-    }
-    vector<int> get_Suffixarr()
-    {
-        vector<int>arr;
-        for(int i=0;i<s.size();i++)
-        {
-            arr.push_back(sa[i]);
-        }
-        return arr;
-    }
-    //lcp[i] = lcp of sa[i] and sa[i-1]
-    void compute_lcp()
-    {
-        pos[sa[0]] = -1;
-        lcp = (int*)malloc((n + 5) * sizeof(int));
-        for(int i = 1; i < s.size(); i++)pos[sa[i]] = sa[i - 1];
-        for(int i = 0, l = 0; i < s.size(); i++)
-        {
-            if(pos[i] == -1)
-            {
-                //lcp of sa[0] = 0
-                ra[i] = 0;
-                continue;
-            }
-            while(s[l + i] == s[pos[i] + l])l++;
-            ra[i] = l--;
-            if(l < 0)l = 0;
-        }
-        for(int i = 0; i < s.size(); i++)lcp[i] = ra[sa[i]];
-    }
-
-    //sparse table for lcp
-    //call compute_lcp before it
-    void create_sparse()
-    {
-        const int K = ceil(log2(n)) + 2;
-        st = (int**)malloc(sizeof(int*) * (n + 5));
-        lg = (int*)malloc(sizeof(int) * (n + 5));
-        for(int i = 0; i < n; i++)
-        {
-            st[i] = (int*)malloc(K * sizeof(int));
-            st[i][0] = lcp[i];
-        }
-        lg[1] = 0;
-        for(int i = 2; i <= n; i++)lg[i] = lg[i >> 1] + 1;
-        for(int i = 1; i < K; i++)
-        {
-            for(int j=0; j+(1<<i)<=n; j++)
-                st[j][i] = min(st[j][i - 1], st[j + (1 << (i - 1))][i - 1]);
-        }
-    }
-
-    //lcp of sa[l] and sa[r]
-    int query(int l, int r)
-    {
-        if(l > r)swap(l, r);
-        if(l == r)return n - sa[l] - 1;
-        l++;
-        int x = lg[r - l + 1];
-        return min(st[l][x], st[r - (1 << x) + 1][x]);
-    }
-    ~SuffixArray()
-    {
-        if(sa != NULL)free(sa);
-        if(ra != NULL)free(ra);
-        if(cnt != NULL)free(cnt);
-        if(pos != NULL)free(pos);
-        if(lcp != NULL)free(lcp);
-        if(lg != NULL)free(lg);
-        if(st != NULL)
-        {
-            for(int i = 0; i < n; i++)free(st[i]);
-            free(st);
-        }
+    void kasaiLCP() {
+        for (int i = 0; i < N; i++) c[SA[i]] = i;
+        for (int i = 0, j, k = 0; i < N; LCP[c[i++]] = k)
+            if (c[i] > 0)
+                for (k ? k-- : 0, j = SA[c[i] - 1];
+                        a[i + k] == a[j + k]; k++);
+            else k = 0;
     }
 };
-int main()
-{
-    string ra;
-    cin>>ra;
-    SuffixArray sf(ra);
-    vector<int> sa = sf.get_Suffixarr();
-    
-    return 0;
+
+const int N = 6e5 + 5;
+int table[N][20], lg[N];
+void buildSparseTable(vector<int> &arr) {
+    int n = arr.size() - 1;
+    for (int i = 1; i <= n; i++)
+        table[i][0] = arr[i];
+    for (int i = 2; i <= n; i++) {
+        lg[i] = lg[i / 2] + 1;
+    }
+    for (int j = 1; (1 << j) <= n; j++) {
+        for (int i = 1; i + (1 << j) - 1 <= n; i++) {
+            table[i][j] = min(table[i][j - 1], table[i + (1 << (j - 1))][j - 1]);
+        }
+    }
 }
+int query(int l, int r) {
+    if (l > r) return 0;
+    int len = r - l + 1;
+    int k = lg[len];
+    return min(table[l][k], table[r - (1 << k) + 1][k]);
+}
+// SuffixArray suff = SuffixArray(st, 128); // 128 is the Ascii bound of the characters
