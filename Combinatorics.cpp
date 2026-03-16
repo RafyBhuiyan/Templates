@@ -1,5 +1,5 @@
-const int MOD = 998244353;
-const int MX = 5000001;
+const int MOD = 1e9+7;
+const int MX = 1e6 + 1;
 struct Combinatorics
 {
     int n, mod;
@@ -37,5 +37,39 @@ struct Combinatorics
         int ans = fac(n);
         ans = (ans * ifac(n - r)) % mod;
         return ans;
+    }
+    int binpow(int a, int p)
+    {
+        int ans = 1;
+        while (p)
+        {
+            if (p % 2)
+            {
+                ans = (ans * a) % mod;
+            }
+            p /= 2;
+            a = (a * a) % mod;
+        }
+        return ans;
+    }
+    int gun(int a, int b)
+    {
+        return ((a % mod) * (b % mod)) % mod;
+    }
+    int jog(int a, int b)
+    {
+        return (a + b) % mod;
+    }
+    int biyog(int a, int b)
+    {
+        return (a%mod - b%mod + mod) % mod;
+    }
+    int bininv(int a)
+    {
+        return binpow(a, mod - 2);
+    }
+    int vag(int a, int b)
+    {
+        return gun(a, bininv(b));
     }
 } comb(MX, MOD);
