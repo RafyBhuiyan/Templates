@@ -19,11 +19,36 @@ using namespace __gnu_pbds;
 typedef tree<ll,null_type,less<ll>,rb_tree_tag,tree_order_statistics_node_update>ordered_set;
 typedef tree<ll,null_type,less_equal<ll>,rb_tree_tag,tree_order_statistics_node_update>multi_ordered_set;
 */
-mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
-inline ll gen_random(ll l, ll r)
-{
-    return uniform_int_distribution<ll>(l, r)(rng);
+
+void show(int x) {cerr << x;}
+// void show(long long x) {cerr << x;}
+void show(double x) {cerr << x;}
+void show(char x) {cerr << '\'' << x << '\'';}
+void show(const string &x) {cerr << '\"' << x << '\"';}
+void show(bool x) {cerr << (x ? "true" : "false");}
+template<typename T, typename V>
+void show(pair<T, V> x) { cerr << '{'; show(x.first); cerr << ", "; show(x.second); cerr << '}'; }
+template<typename T>
+void show(T x) {int f = 0; cerr << "{"; for (auto &i : x) cerr << (f++ ? ", " : ""), show(i); cerr << "}";}
+void debug_out(string s) {
+    s.clear();
+    cerr << s << '\n';
 }
+template <typename T, typename... V>
+void debug_out(string s, T t, V... v) {
+    s.erase(remove(s.begin(), s.end(), ' '), s.end());
+    cerr << "        "; // 8 spaces
+    cerr << s.substr(0, s.find(','));
+    s = s.substr(s.find(',') + 1);
+    cerr << " = ";
+    show(t);
+    cerr << endl;
+    if (sizeof...(v)) debug_out(s, v...);
+}
+#define dbg(x...) cerr << "LINE: " << __LINE__ << endl; debug_out(#x, x); cerr << endl;
+
+mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+inline int gen_random(int l, int r) {return uniform_int_distribution<int>(l, r)(rng);}
 void TLE()
 {
     clock_t shuru = clock(); // call it in the main code
