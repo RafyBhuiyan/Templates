@@ -1,5 +1,5 @@
 #include<bits/stdc++.h>
-#define ll long long int
+#define int long long int
 #define no "No"
 #define yes "Yes"
 #define decimal(n) cout<<fixed<<setprecision(n);
@@ -54,10 +54,10 @@ void TLE()
     clock_t shuru = clock(); // call it in the main code
     (clock() - shuru) * 1.0 / CLOCKS_PER_SEC < 3.5;
 }
-const ll mod = 1e9 + 7;
-ll binpow(ll a, ll p)
+const int mod = 1e9 + 7;
+int binpow(int a, int p)
 {
-    ll ans = 1;
+    int ans = 1;
     while (p)
     {
         if (p % 2)
@@ -69,48 +69,47 @@ ll binpow(ll a, ll p)
     }
     return ans;
 }
-ll gun(ll a, ll b)
+int gun(int a, int b)
 {
     return ((a % mod) * (b % mod)) % mod;
 }
-ll jog(ll a, ll b)
+int jog(int a, int b)
 {
     return (a + b) % mod;
 }
-ll biyog(ll a, ll b)
+int biyog(int a, int b)
 {
     return (a - b + mod) % mod;
 }
-ll inv(ll a)
+int inv(int a)
 {
     return binpow(a,mod-2);
 }
-ll vag(ll a,ll b)
+int vag(int a,int b)
 {
     return gun(a,inv(b));
 }
-ll ask(ll l, ll r)
+int ask(int l, int r)
 {
-    ll x;
+    int x;
     cout << "? " << l << " " << r << endl;
     cin >> x;
     return x;
 }
 
-void solve(int test)
+void solve()
 {
 }
-int main()
+int32_t main()
 {
     fastio
     // io();
-    ll test = 1;
+    int test = 1;
     cin >> test;
-    For(i, test)
+    while (test--)
     {
-        // cout << "Case #" << i + 1 << ": ";
-        solve(i);
+        // cout << "Case " << i + 1 << ": ";
+        solve();
     }
     return 0;
 }
-    
